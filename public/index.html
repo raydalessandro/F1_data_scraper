@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Dati Formula 1 aggiornati automaticamente - Ultimo Gran Premio">
+  <title>F1 Data - Latest GP Results</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>🏎️ F1 Live Data</h1>
+      <p class="subtitle">Dati aggiornati automaticamente ogni Lunedì</p>
+      <p class="powered-by">Powered by <a href="https://openf1.org" target="_blank">OpenF1 API</a></p>
+    </header>
+
+    <!-- Loading State -->
+    <div id="loading" class="state-message">
+      <div class="spinner"></div>
+      <p>Caricamento dati...</p>
+    </div>
+
+    <!-- Error State -->
+    <div id="error" class="state-message error" style="display: none;">
+      <p>❌ <span id="error-message"></span></p>
+      <button onclick="location.reload()">Riprova</button>
+    </div>
+    
+    <!-- Main Content -->
+    <div id="content" style="display: none;">
+      
+      <!-- Meeting Info -->
+      <section class="meeting-info">
+        <h2 id="gp-name">-</h2>
+        <div class="meeting-details">
+          <p id="gp-location">📍 -</p>
+          <p id="gp-date">📅 -</p>
+          <p id="gp-circuit">🏁 -</p>
+        </div>
+      </section>
+
+      <!-- Filters -->
+      <section class="filters">
+        <label>
+          Filtra per team:
+          <select id="team-filter">
+            <option value="">Tutti i team</option>
+          </select>
+        </label>
+        <label>
+          Mostra:
+          <select id="view-filter">
+            <option value="all">Tutti i piloti</option>
+            <option value="podium">Solo podio</option>
+            <option value="points">Solo punti (Top 10)</option>
+          </select>
+        </label>
+      </section>
+
+      <!-- Race Results -->
+      <section class="results">
+        <h3>🏁 Risultati Gara</h3>
+        <div id="race-results" class="results-grid"></div>
+      </section>
+
+      <!-- Statistics -->
+      <section class="stats">
+        <h3>📊 Statistiche</h3>
+        <div id="stats-grid" class="stats-grid"></div>
+      </section>
+
+      <!-- Raw Data (Collapsible) -->
+      <details class="raw-data">
+        <summary>📄 Dati Raw JSON (per sviluppatori)</summary>
+        <pre id="json-data"></pre>
+      </details>
+
+    </div>
+  </div>
+
+  <footer>
+    <p>Made with ❤️ by <strong>EAR LAB</strong> - Digital Solutions & AI Research</p>
+    <p class="last-update">
+      Ultimo aggiornamento: <span id="last-update">-</span>
+    </p>
+    <p class="github-link">
+      <a href="https://github.com/raydalessandro/F1_data_scraper" target="_blank">
+        View on GitHub →
+      </a>
+    </p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
