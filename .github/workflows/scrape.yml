@@ -15,7 +15,7 @@ import type {
 } from './types.js';
 
 export class F1Scraper {
-  private service: OpenF1Service;
+  private readonly service: OpenF1Service;
 
   constructor() {
     this.service = new OpenF1Service();
@@ -33,30 +33,30 @@ export class F1Scraper {
 
       // 1. Ottieni ultimo meeting
       const meetingResult = await this.service.getLatestMeeting();
-      if (!meetingResult.success) {
+      if (!meetingResult.success || !meetingResult.data) {
         return {
           success: false,
-          error: meetingResult.error,
+          error: meetingResult.error ?? { code: 'NO_DATA', message: 'Nessun meeting disponibile' },
           timestamp: new Date().toISOString(),
         };
       }
 
-      const meeting = meetingResult.data!;
+      const meeting = meetingResult.data;
       console.log(`\n📍 ${meeting.meeting_name}`);
       console.log(`   ${meeting.location}, ${meeting.country_name}`);
       console.log(`   ${new Date(meeting.date_start).toLocaleDateString('it-IT')}`);
 
       // 2. Ottieni tutte le sessioni
       const sessionsResult = await this.service.getSessions(meeting.meeting_key);
-      if (!sessionsResult.success) {
+      if (!sessionsResult.success || !sessionsResult.data) {
         return {
           success: false,
-          error: sessionsResult.error,
+          error: sessionsResult.error ?? { code: 'NO_DATA', message: 'Nessuna sessione disponibile' },
           timestamp: new Date().toISOString(),
         };
       }
 
-      const sessions = sessionsResult.data!;
+      const sessions = sessionsResult.data;
       
       // 3. Filtra sessioni se richiesto
       const sessionsToScrape = config.sessionTypes
@@ -122,15 +122,15 @@ export class F1Scraper {
 
       // 2. Recupera sessioni
       const sessionsResult = await this.service.getSessions(meeting.meeting_key);
-      if (!sessionsResult.success) {
+      if (!sessionsResult.success || !sessionsResult.data) {
         return {
           success: false,
-          error: sessionsResult.error,
+          error: sessionsResult.error ?? { code: 'NO_DATA', message: 'Nessuna sessione disponibile' },
           timestamp: new Date().toISOString(),
         };
       }
 
-      const sessions = sessionsResult.data!;
+      const sessions = sessionsResult.data;
       const sessionsToScrape = config.sessionTypes
         ? sessions.filter(s => config.sessionTypes!.includes(s.session_name as any))
         : sessions;
@@ -174,15 +174,15 @@ export class F1Scraper {
       console.log('━'.repeat(50));
 
       const meetingsResult = await this.service.getMeetings(year);
-      if (!meetingsResult.success) {
+      if (!meetingsResult.success || !meetingsResult.data) {
         return {
           success: false,
-          error: meetingsResult.error,
+          error: meetingsResult.error ?? { code: 'NO_DATA', message: 'Nessun meeting disponibile' },
           timestamp: new Date().toISOString(),
         };
       }
 
-      const meetings = meetingsResult.data!;
+      const meetings = meetingsResult.data;
       console.log(`\n📅 Trovati ${meetings.length} Gran Premi\n`);
 
       const allGrandsPrix: GrandPrixData[] = [];
@@ -210,7 +210,6 @@ export class F1Scraper {
 
   /**
    * Recupera dati per un array di sessioni
-   * @private
    */
   private async scrapeSessionsData(
     sessions: Session[],
@@ -227,9 +226,9 @@ export class F1Scraper {
         includeStartingGrid: session.session_type === 'Race',
       });
 
-      if (sessionDataResult.success) {
+      if (sessionDataResult.success && sessionDataResult.data) {
         const key = this.normalizeSessionName(session.session_name);
-        sessionsData[key] = sessionDataResult.data!;
+        sessionsData[key] = sessionDataResult.data;
       }
     }
 
@@ -238,7 +237,6 @@ export class F1Scraper {
 
   /**
    * Recupera un meeting specifico per chiave
-   * @private
    */
   private async getMeetingByKey(
     meetingKey: number,
@@ -248,16 +246,15 @@ export class F1Scraper {
       year ?? new Date().getFullYear()
     );
 
-    if (!meetingsResult.success) {
+    if (!meetingsResult.success || !meetingsResult.data) {
       return null;
     }
 
-    return meetingsResult.data!.find(m => m.meeting_key === meetingKey) ?? null;
+    return meetingsResult.data.find(m => m.meeting_key === meetingKey) ?? null;
   }
 
   /**
    * Normalizza nome sessione per chiavi object
-   * @private
    */
   private normalizeSessionName(sessionName: string): string {
     return sessionName
@@ -268,7 +265,6 @@ export class F1Scraper {
 
   /**
    * Calcola il round number del meeting
-   * @private
    */
   private calculateRound(meeting: Meeting): number {
     // Il round è dedotto dalla chiave del meeting
@@ -278,7 +274,6 @@ export class F1Scraper {
 
   /**
    * Crea un risultato di errore standardizzato
-   * @private
    */
   private createErrorResult(code: string, error: unknown): ScraperResult<never> {
     return {
