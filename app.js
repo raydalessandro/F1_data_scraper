@@ -1,7 +1,8 @@
 // ========================================
 // CONFIGURAZIONE
 // ========================================
-const DATA_URL = '../data/latest-gp.json';
+
+const DATA_URL = './data/latest-gp.json';
 
 // ========================================
 // ELEMENTI DOM
