@@ -16,7 +16,6 @@ import type {
   RaceControl,
   StartingGrid,
   SessionData,
-  GrandPrixData,
   ScraperResult,
 } from './types.js';
 
