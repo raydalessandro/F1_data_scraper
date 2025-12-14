@@ -1,0 +1,494 @@
+/* ========================================
+   RESET & VARIABLES
+======================================== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --primary: #667eea;
+  --secondary: #764ba2;
+  --gold: #FFD700;
+  --silver: #C0C0C0;
+  --bronze: #CD7F32;
+  --success: #48bb78;
+  --error: #e74c3c;
+  --text: #2d3748;
+  --text-light: #718096;
+  --bg-light: #f7fafc;
+  --border: #e2e8f0;
+  --shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.15);
+}
+
+/* ========================================
+   BASE STYLES
+======================================== */
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+  color: var(--text);
+  min-height: 100vh;
+  padding: 20px;
+  line-height: 1.6;
+}
+
+a {
+  color: var(--primary);
+  text-decoration: none;
+  transition: opacity 0.2s;
+}
+
+a:hover {
+  opacity: 0.8;
+}
+
+/* ========================================
+   CONTAINER
+======================================== */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  background: white;
+  border-radius: 20px;
+  padding: 40px;
+  box-shadow: var(--shadow-lg);
+}
+
+/* ========================================
+   HEADER
+======================================== */
+header {
+  text-align: center;
+  margin-bottom: 40px;
+  padding-bottom: 30px;
+  border-bottom: 3px solid var(--primary);
+}
+
+h1 {
+  font-size: 3.5em;
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 10px;
+  font-weight: 800;
+}
+
+.subtitle {
+  color: var(--text-light);
+  font-size: 1.2em;
+  margin-bottom: 8px;
+}
+
+.powered-by {
+  color: var(--text-light);
+  font-size: 0.9em;
+}
+
+/* ========================================
+   LOADING & ERROR STATES
+======================================== */
+.state-message {
+  text-align: center;
+  padding: 60px 20px;
+}
+
+.spinner {
+  border: 4px solid var(--border);
+  border-top: 4px solid var(--primary);
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 20px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.error {
+  color: var(--error);
+}
+
+.error button {
+  margin-top: 20px;
+  padding: 12px 30px;
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1em;
+  transition: transform 0.2s;
+}
+
+.error button:hover {
+  transform: translateY(-2px);
+}
+
+/* ========================================
+   MEETING INFO
+======================================== */
+.meeting-info {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+  color: white;
+  padding: 40px;
+  border-radius: 15px;
+  margin-bottom: 30px;
+  box-shadow: var(--shadow);
+}
+
+.meeting-info h2 {
+  font-size: 2.5em;
+  margin-bottom: 20px;
+  font-weight: 700;
+}
+
+.meeting-details {
+  display: flex;
+  gap: 30px;
+  flex-wrap: wrap;
+}
+
+.meeting-details p {
+  font-size: 1.1em;
+  opacity: 0.95;
+}
+
+/* ========================================
+   FILTERS
+======================================== */
+.filters {
+  margin-bottom: 30px;
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  padding: 20px;
+  background: var(--bg-light);
+  border-radius: 12px;
+}
+
+.filters label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.filters select {
+  padding: 12px 20px;
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  font-size: 1em;
+  cursor: pointer;
+  background: white;
+  transition: border-color 0.2s;
+  min-width: 200px;
+}
+
+.filters select:hover {
+  border-color: var(--primary);
+}
+
+.filters select:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+/* ========================================
+   RESULTS
+======================================== */
+.results {
+  margin-bottom: 40px;
+}
+
+.results h3 {
+  font-size: 2em;
+  color: var(--primary);
+  margin-bottom: 25px;
+  font-weight: 700;
+}
+
+.results-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  background: var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.result-row {
+  display: grid;
+  grid-template-columns: 70px 1fr 220px 140px;
+  gap: 20px;
+  padding: 20px;
+  background: white;
+  align-items: center;
+  transition: all 0.2s;
+}
+
+.result-row:hover {
+  background: var(--bg-light);
+  transform: translateX(5px);
+}
+
+.position {
+  font-size: 1.8em;
+  font-weight: 800;
+  color: var(--text-light);
+  text-align: center;
+}
+
+.driver-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.driver-name {
+  font-size: 1.2em;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.driver-number {
+  font-size: 0.9em;
+  color: var(--text-light);
+}
+
+.team-name {
+  color: var(--text-light);
+  font-size: 1em;
+}
+
+.gap {
+  text-align: right;
+  font-family: 'Courier New', monospace;
+  font-size: 1.1em;
+  color: var(--text);
+  font-weight: 600;
+}
+
+/* Podium Styles */
+.podium-1 .position { 
+  color: var(--gold);
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+}
+
+.podium-2 .position { 
+  color: var(--silver);
+  text-shadow: 0 0 10px rgba(192, 192, 192, 0.3);
+}
+
+.podium-3 .position { 
+  color: var(--bronze);
+  text-shadow: 0 0 10px rgba(205, 127, 50, 0.3);
+}
+
+.podium-1, .podium-2, .podium-3 {
+  background: linear-gradient(to right, rgba(255, 215, 0, 0.05), transparent);
+}
+
+/* ========================================
+   STATISTICS
+======================================== */
+.stats {
+  margin-bottom: 40px;
+}
+
+.stats h3 {
+  font-size: 2em;
+  color: var(--primary);
+  margin-bottom: 25px;
+  font-weight: 700;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+}
+
+.stat-card {
+  background: var(--bg-light);
+  padding: 25px;
+  border-radius: 12px;
+  border-left: 4px solid var(--primary);
+  transition: transform 0.2s;
+}
+
+.stat-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow);
+}
+
+.stat-label {
+  font-size: 0.9em;
+  color: var(--text-light);
+  margin-bottom: 8px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.stat-value {
+  font-size: 2em;
+  font-weight: 800;
+  color: var(--primary);
+}
+
+/* ========================================
+   RAW DATA
+======================================== */
+.raw-data {
+  margin-top: 40px;
+  padding: 25px;
+  background: var(--bg-light);
+  border-radius: 12px;
+  border: 2px solid var(--border);
+}
+
+.raw-data summary {
+  cursor: pointer;
+  font-weight: 700;
+  color: var(--primary);
+  font-size: 1.2em;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.raw-data summary:hover {
+  opacity: 0.8;
+}
+
+.raw-data pre {
+  margin-top: 20px;
+  padding: 20px;
+  background: #2d3748;
+  color: #68d391;
+  border-radius: 8px;
+  overflow-x: auto;
+  font-size: 0.85em;
+  line-height: 1.5;
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+/* ========================================
+   FOOTER
+======================================== */
+footer {
+  text-align: center;
+  margin-top: 60px;
+  padding-top: 30px;
+  color: white;
+  opacity: 0.9;
+}
+
+footer p {
+  margin-bottom: 8px;
+}
+
+.last-update {
+  font-size: 0.95em;
+}
+
+.github-link {
+  margin-top: 15px;
+}
+
+.github-link a {
+  color: white;
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+/* ========================================
+   RESPONSIVE
+======================================== */
+@media (max-width: 768px) {
+  body {
+    padding: 10px;
+  }
+
+  .container {
+    padding: 20px;
+    border-radius: 15px;
+  }
+
+  h1 {
+    font-size: 2.5em;
+  }
+
+  .meeting-info {
+    padding: 25px;
+  }
+
+  .meeting-info h2 {
+    font-size: 1.8em;
+  }
+
+  .meeting-details {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .result-row {
+    grid-template-columns: 50px 1fr;
+    gap: 15px;
+  }
+
+  .team-name,
+  .gap {
+    grid-column: 2;
+    text-align: left;
+  }
+
+  .gap {
+    font-size: 0.95em;
+  }
+
+  .filters {
+    flex-direction: column;
+  }
+
+  .filters select {
+    width: 100%;
+  }
+}
+
+/* ========================================
+   ANIMATIONS
+======================================== */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+#content {
+  animation: fadeIn 0.5s ease-out;
+}
+
+.result-row {
+  animation: fadeIn 0.3s ease-out backwards;
+}
+
+.result-row:nth-child(1) { animation-delay: 0.05s; }
+.result-row:nth-child(2) { animation-delay: 0.1s; }
+.result-row:nth-child(3) { animation-delay: 0.15s; }
