@@ -15,7 +15,7 @@ import type {
 } from './types.js';
 
 export class F1Scraper {
-  private readonly service: OpenF1Service;
+  private service: OpenF1Service;
 
   constructor() {
     this.service = new OpenF1Service();
