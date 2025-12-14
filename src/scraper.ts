@@ -10,6 +10,8 @@ import type {
   GrandPrixData,
   ScraperResult,
   SessionData,
+  Meeting,
+  Session,
 } from './types.js';
 
 export class F1Scraper {
@@ -54,32 +56,17 @@ export class F1Scraper {
         };
       }
 
-      const allSessions = sessionsResult.data!;
+      const sessions = sessionsResult.data!;
       
       // 3. Filtra sessioni se richiesto
       const sessionsToScrape = config.sessionTypes
-        ? allSessions.filter(s => config.sessionTypes!.includes(s.session_name as any))
-        : allSessions;
+        ? sessions.filter(s => config.sessionTypes!.includes(s.session_name as any))
+        : sessions;
 
       console.log(`\n🔍 Sessioni da elaborare: ${sessionsToScrape.length}`);
 
       // 4. Recupera dati per ogni sessione
-      const sessionsData: Record<string, SessionData> = {};
-      
-      for (const session of sessionsToScrape) {
-        const sessionDataResult = await this.service.getCompleteSessionData(session, {
-          includeLaps: config.includeLaps ?? false,
-          includeStints: config.includeStints ?? false,
-          includePits: config.includePits ?? false,
-          includeRaceControl: config.includeRaceControl ?? false,
-          includeStartingGrid: session.session_type === 'Race',
-        });
-
-        if (sessionDataResult.success) {
-          const key = this.normalizeSessionName(session.session_name);
-          sessionsData[key] = sessionDataResult.data!;
-        }
-      }
+      const sessionsData = await this.scrapeSessionsData(sessionsToScrape, config);
 
       // 5. Costruisci risultato finale
       const grandPrixData: GrandPrixData = {
@@ -88,7 +75,7 @@ export class F1Scraper {
         metadata: {
           scraped_at: new Date().toISOString(),
           season: meeting.year,
-          round: this.calculateRound(meeting, allSessions),
+          round: this.calculateRound(meeting),
         },
       };
 
@@ -102,14 +89,7 @@ export class F1Scraper {
       };
     } catch (error) {
       console.error('❌ Errore durante lo scraping:', error);
-      return {
-        success: false,
-        error: {
-          code: 'SCRAPER_ERROR',
-          message: error instanceof Error ? error.message : 'Errore sconosciuto',
-        },
-        timestamp: new Date().toISOString(),
-      };
+      return this.createErrorResult('SCRAPER_ERROR', error);
     }
   }
 
@@ -125,16 +105,7 @@ export class F1Scraper {
       console.log('━'.repeat(50));
 
       // 1. Ottieni meeting
-      const meetingsResult = await this.service.getMeetings(config.year ?? new Date().getFullYear());
-      if (!meetingsResult.success) {
-        return {
-          success: false,
-          error: meetingsResult.error,
-          timestamp: new Date().toISOString(),
-        };
-      }
-
-      const meeting = meetingsResult.data!.find(m => m.meeting_key === meetingKey);
+      const meeting = await this.getMeetingByKey(meetingKey, config.year);
       if (!meeting) {
         return {
           success: false,
@@ -149,7 +120,7 @@ export class F1Scraper {
       console.log(`\n📍 ${meeting.meeting_name}`);
       console.log(`   ${meeting.location}, ${meeting.country_name}`);
 
-      // 2. Recupera sessioni (stesso processo di scrapeLatestGrandPrix)
+      // 2. Recupera sessioni
       const sessionsResult = await this.service.getSessions(meeting.meeting_key);
       if (!sessionsResult.success) {
         return {
@@ -159,35 +130,22 @@ export class F1Scraper {
         };
       }
 
-      const allSessions = sessionsResult.data!;
+      const sessions = sessionsResult.data!;
       const sessionsToScrape = config.sessionTypes
-        ? allSessions.filter(s => config.sessionTypes!.includes(s.session_name as any))
-        : allSessions;
+        ? sessions.filter(s => config.sessionTypes!.includes(s.session_name as any))
+        : sessions;
 
-      const sessionsData: Record<string, SessionData> = {};
-      
-      for (const session of sessionsToScrape) {
-        const sessionDataResult = await this.service.getCompleteSessionData(session, {
-          includeLaps: config.includeLaps ?? false,
-          includeStints: config.includeStints ?? false,
-          includePits: config.includePits ?? false,
-          includeRaceControl: config.includeRaceControl ?? false,
-          includeStartingGrid: session.session_type === 'Race',
-        });
+      // 3. Recupera dati sessioni
+      const sessionsData = await this.scrapeSessionsData(sessionsToScrape, config);
 
-        if (sessionDataResult.success) {
-          const key = this.normalizeSessionName(session.session_name);
-          sessionsData[key] = sessionDataResult.data!;
-        }
-      }
-
+      // 4. Costruisci risultato
       const grandPrixData: GrandPrixData = {
         meeting,
         sessions: sessionsData as any,
         metadata: {
           scraped_at: new Date().toISOString(),
           season: meeting.year,
-          round: this.calculateRound(meeting, allSessions),
+          round: this.calculateRound(meeting),
         },
       };
 
@@ -200,14 +158,7 @@ export class F1Scraper {
         timestamp: new Date().toISOString(),
       };
     } catch (error) {
-      return {
-        success: false,
-        error: {
-          code: 'SCRAPER_ERROR',
-          message: error instanceof Error ? error.message : 'Errore sconosciuto',
-        },
-        timestamp: new Date().toISOString(),
-      };
+      return this.createErrorResult('SCRAPER_ERROR', error);
     }
   }
 
@@ -253,19 +204,60 @@ export class F1Scraper {
         timestamp: new Date().toISOString(),
       };
     } catch (error) {
-      return {
-        success: false,
-        error: {
-          code: 'SCRAPER_ERROR',
-          message: error instanceof Error ? error.message : 'Errore sconosciuto',
-        },
-        timestamp: new Date().toISOString(),
-      };
+      return this.createErrorResult('SCRAPER_ERROR', error);
     }
   }
 
   /**
+   * Recupera dati per un array di sessioni
+   * @private
+   */
+  private async scrapeSessionsData(
+    sessions: Session[],
+    config: Omit<ScraperConfig, 'year' | 'meetingKey'>
+  ): Promise<Record<string, SessionData>> {
+    const sessionsData: Record<string, SessionData> = {};
+
+    for (const session of sessions) {
+      const sessionDataResult = await this.service.getCompleteSessionData(session, {
+        includeLaps: config.includeLaps ?? false,
+        includeStints: config.includeStints ?? false,
+        includePits: config.includePits ?? false,
+        includeRaceControl: config.includeRaceControl ?? false,
+        includeStartingGrid: session.session_type === 'Race',
+      });
+
+      if (sessionDataResult.success) {
+        const key = this.normalizeSessionName(session.session_name);
+        sessionsData[key] = sessionDataResult.data!;
+      }
+    }
+
+    return sessionsData;
+  }
+
+  /**
+   * Recupera un meeting specifico per chiave
+   * @private
+   */
+  private async getMeetingByKey(
+    meetingKey: number,
+    year?: number
+  ): Promise<Meeting | null> {
+    const meetingsResult = await this.service.getMeetings(
+      year ?? new Date().getFullYear()
+    );
+
+    if (!meetingsResult.success) {
+      return null;
+    }
+
+    return meetingsResult.data!.find(m => m.meeting_key === meetingKey) ?? null;
+  }
+
+  /**
    * Normalizza nome sessione per chiavi object
+   * @private
    */
   private normalizeSessionName(sessionName: string): string {
     return sessionName
@@ -276,10 +268,26 @@ export class F1Scraper {
 
   /**
    * Calcola il round number del meeting
+   * @private
    */
-  private calculateRound(meeting: any, allSessions: any[]): number {
-    // Il round è dedotto dalla posizione del meeting nella stagione
+  private calculateRound(meeting: Meeting): number {
+    // Il round è dedotto dalla chiave del meeting
     // OpenF1 non fornisce direttamente il round number
     return meeting.meeting_key % 100;
+  }
+
+  /**
+   * Crea un risultato di errore standardizzato
+   * @private
+   */
+  private createErrorResult(code: string, error: unknown): ScraperResult<never> {
+    return {
+      success: false,
+      error: {
+        code,
+        message: error instanceof Error ? error.message : 'Errore sconosciuto',
+      },
+      timestamp: new Date().toISOString(),
+    };
   }
 }
